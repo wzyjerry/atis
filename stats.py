@@ -74,7 +74,7 @@ def gen_query_slot(i):
   }
 
 def gen_slots(ds, entity_dir='data'):
-  query, slots = map(train_ds.get, ['query', 'slot_labels'])
+  query, slots = map(ds.get, ['query', 'slot_labels'])
   d_slot = {}
   for i in range(len(query)):
     stat = None
@@ -100,6 +100,31 @@ def gen_slots(ds, entity_dir='data'):
     with open(os.path.join(entity_dir, c), 'w', encoding='utf-8') as fout:
       for item in d_slot[c]:
         fout.write('%s\n' % item)
+
+def gen_dataset(ds, out):
+  query, slots, intent = map(ds.get, ['query', 'slot_labels', 'intent_labels'])
+  with open(out, 'w', encoding='utf-8') as fout:
+    for i in range(len(query)):
+      slot = set()
+      stat = None
+      token = []
+      for j in range(len(query[i])):
+        if i2s[slots[i][j]].startswith('B-'):
+          if len(token) > 0:
+            slot.add((stat, ' '.join(token)))
+          stat = i2s[slots[i][j]][2:]
+          token = [i2t[query[i][j]]]
+        elif i2s[slots[i][j]].startswith('I-'):
+          if stat != i2s[slots[i][j]][2:]:
+            raise Exception('Looks like something went wrong')
+          token.append(i2t[query[i][j]])
+      if len(token) > 0:
+        slot.add((stat, ' '.join(token)))
+      fout.write('%s\n' % str({
+        'intent': i2in[intent[i][0]],
+        'query': ' '.join(map(i2t.get, query[i][1:-1])),
+        'slots': str(slot)
+      }))
 
 def auto_rules(func):
   query, slots, intent = map(train_ds.get, ['query', 'slot_labels', 'intent_labels'])
@@ -471,4 +496,5 @@ if __name__ == "__main__":
   # gen_querys(train_ds, os.path.join(STAT_DIR, 'train_query.txt'))
   # gen_querys(test_ds, os.path.join(STAT_DIR, 'test_query.txt'))
   # gen_slots(train_ds, 'data/entities')
+  gen_dataset(train_ds, 'data/train.txt')
   pass
