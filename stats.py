@@ -163,6 +163,7 @@ def auto_rules(func):
       nodes.append({
         'type': 'entity',
         'value': i2s[slots[i]][2:].split('.')[-1],
+        'slot': i2s[slots[i]][2:],
         'dropout': 0.0
       })
       nodes.append({
@@ -469,32 +470,27 @@ def make_package(
           nodes.append({
             'type': 'content',
             'cut': 0,
-            'isEntity': True,
+            'isSlot': True,
             'name': '<%s>' % node['value'],
-            'entity': entitymap[node['value']]
+            'entity': entitymap[node['value']],
+            'slot': node['slot']
           })
   return json.dumps(package)
 
-# matched, rules = auto_rules(lambda x: 'flight' == i2in[x])
-# print('matched: ', matched)
-# for rule in rules:
-#   print(rule['name'])
-#   print('nodes:')
-#   for node in rule['nodes']:
-#     print(node)
-#   print('*' * 74)
+matched, rules = auto_rules(lambda x: 'flight' == i2in[x])
+print('matched: ', matched)
 
-# with open('package.txt', 'w', encoding='utf-8') as fout:
-#   fout.write(make_package(
-#     entitymap,
-#     rules,
-#     name='flight',
-#     weight=0.73))
+with open('package-flight.txt', 'w', encoding='utf-8') as fout:
+  fout.write(make_package(
+    entitymap,
+    rules,
+    name='flight',
+    weight=0.73))
 
 if __name__ == "__main__":
   # STAT_DIR = 'data/stats'
   # gen_querys(train_ds, os.path.join(STAT_DIR, 'train_query.txt'))
   # gen_querys(test_ds, os.path.join(STAT_DIR, 'test_query.txt'))
   # gen_slots(train_ds, 'data/entities')
-  gen_dataset(train_ds, 'data/train.txt')
+  # gen_dataset(train_ds, 'data/train.txt')
   pass
