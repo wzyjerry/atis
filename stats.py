@@ -50,7 +50,8 @@ def print_query_with_slot(i):
       token.append(i2t[query[i][j]])
   print(' '.join(token))
 
-def gen_query_slot(i):
+def gen_query_slot(ds, i):
+  query, slots = map(ds.get, ['query', 'slot_labels'])
   token = []
   feature = []
   start = 0
@@ -123,7 +124,8 @@ def gen_dataset(ds, out):
       fout.write('%s\n' % str({
         'intent': i2in[intent[i][0]],
         'query': ' '.join(map(i2t.get, query[i][1:-1])),
-        'slots': str(slot)
+        'slots': slot,
+        'query_slot': gen_query_slot(ds, i)
       }))
 
 def auto_rules(func):
@@ -477,20 +479,20 @@ def make_package(
           })
   return json.dumps(package)
 
-matched, rules = auto_rules(lambda x: 'flight' == i2in[x])
-print('matched: ', matched)
+# matched, rules = auto_rules(lambda x: 'flight' == i2in[x])
+# print('matched: ', matched)
 
-with open('package-flight.txt', 'w', encoding='utf-8') as fout:
-  fout.write(make_package(
-    entitymap,
-    rules,
-    name='flight',
-    weight=0.73))
+# with open('package-flight.txt', 'w', encoding='utf-8') as fout:
+#   fout.write(make_package(
+#     entitymap,
+#     rules,
+#     name='flight',
+#     weight=0.73))
 
 if __name__ == "__main__":
   # STAT_DIR = 'data/stats'
   # gen_querys(train_ds, os.path.join(STAT_DIR, 'train_query.txt'))
   # gen_querys(test_ds, os.path.join(STAT_DIR, 'test_query.txt'))
   # gen_slots(train_ds, 'data/entities')
-  # gen_dataset(train_ds, 'data/train.txt')
+  gen_dataset(test_ds, 'data/test.txt')
   pass
